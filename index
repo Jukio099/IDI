@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casanare Histórico: 6º Mejor Desempeño del País</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Casanare Green & Gold -->
+    <!-- Application Structure Plan: A top-to-bottom narrative SPA. Starts with a high-impact Hero section (headline, key results). Then, it educates the user on the "Why" (What is IDI?) using interactive accordions. It follows with the "How" through three distinct data visualization sections: 1) Historical evolution (animated bar chart), 2) Keys to success with comparative cards and a horizontal bar chart for the biggest improvements, and 3) National context (Top 10 bar chart). It concludes with a powerful, forward-looking message. This narrative flow (What -> Why -> How -> Context -> Future) is designed for maximum clarity, engagement, and emotional impact, turning a government report into a story of collective success. -->
+    <!-- Visualization & Content Choices: 1. Main Results (Score, Rank): Goal: Inform/Impact -> Animated counters using JS for a dynamic "wow" effect. 2. Historical Data: Goal: Show Change -> Chart.js animated vertical bar chart to visually emphasize the "great leap" of 2024. 3. 6 Key Policies: Goal: Compare -> Interactive HTML/Tailwind cards showing 2023 vs 2024 scores. Clean, direct comparison. 4. 5 Biggest Leaps: Goal: Highlight Impact -> Chart.js animated horizontal bar chart to clearly rank and compare the point gains, which are the core of the success story. 5. National Ranking: Goal: Contextualize/Prestige -> Chart.js animated vertical bar chart to position Casanare among the nation's elite, highlighting its bar with an accent color for immediate identification. This approach uses the best tool for each piece of data, prioritizing visual storytelling over static tables. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        :root {
+            --casanare-green: #00A859;
+            --casanare-yellow: #FFD700;
+            --zinc-light: #f4f4f5;
+            --zinc-dark: #18181b;
+            --zinc-medium: #52525b;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--zinc-light);
+            color: var(--zinc-dark);
+        }
+        .hero-gradient {
+            background-color: var(--casanare-green);
+        }
+        .section-title {
+            font-size: 2.25rem; /* Reduced for mobile */
+            font-weight: 800;
+            color: var(--zinc-dark);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        @media (min-width: 768px) {
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--zinc-medium);
+            text-align: center;
+            max-width: 48rem;
+            margin: 0 auto 3rem auto;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 400px;
+            width: 100%;
+            max-width: 900px;
+        }
+        .full-ranking-chart-container {
+             position: relative;
+            margin: auto;
+            height: 800px; /* Taller for 32 departments */
+            width: 100%;
+            max-width: 900px;
+        }
+        .animated-element {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animated-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .nav-link {
+            transition: color 0.2s, border-color 0.2s;
+            color: #475569;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 4px;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--casanare-green);
+            border-bottom-color: var(--casanare-green);
+        }
+        .accordion-header {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .accordion-header.active, .accordion-header:hover {
+            background-color: #e4e4e7;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+        }
+        .accordion-icon {
+            transition: transform 0.4s ease;
+        }
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        #scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--casanare-green);
+            color: white;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            transform: translateY(20px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        #scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .text-justify {
+            text-align: justify;
+        }
+        .share-button {
+            background-color: #1877F2; /* Facebook Blue */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .share-button:hover {
+            background-color: #166fe5;
+            transform: translateY(-2px);
+        }
+        .copy-button {
+             background-color: #34495e; /* Wet Asphalt */
+        }
+        .copy-button:hover {
+             background-color: #2c3e50; /* Midnight Blue */
+        }
+    </style>
+</head>
+<body class="text-zinc-700">
+
+    <header class="hero-gradient text-white text-center py-20 px-6">
+        <div class="animated-element">
+             <h1 class="text-4xl md:text-6xl font-black uppercase tracking-wide mt-2">
+                Casanare: 6º mejor del país
+            </h1>
+        </div>
+        <p class="max-w-3xl mx-auto mt-6 text-lg md:text-xl opacity-90 animated-element text-justify" style="transition-delay: 200ms;">
+            Con un puntaje récord de <strong>89.8</strong>, superamos nuestra meta del cuatrienio y demostramos que una gestión <strong>eficiente y transparente</strong> es el camino. <strong>Un logro que nos pertenece a todos.</strong>
+        </p>
+    </header>
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-3 flex justify-center items-center">
+            <div class="flex space-x-4 md:space-x-10 text-sm md:text-base font-semibold">
+                <a href="#vision-general" class="nav-link">Visión General</a>
+                <a href="#el-salto" class="nav-link">El Gran Salto</a>
+                <a href="#claves-exito" class="nav-link">Claves del Éxito</a>
+                <a href="#ranking-nacional" class="nav-link">Ranking Nacional</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6">
+
+        <section id="vision-general" class="py-16">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center animated-element">
+                <div class="bg-white p-8 rounded-lg shadow-lg border-t-4 border-green-500">
+                    <p class="text-lg font-semibold text-zinc-600">Puntaje Récord 2024</p>
+                    <p id="score-counter" class="text-7xl font-black text-green-600 mt-2">0</p>
+                    <p class="text-zinc-500 mt-2">Supera la meta del cuatrienio (<strong>87</strong>)</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border-t-4 border-yellow-500">
+                     <p class="text-lg font-semibold text-zinc-600">Posición Nacional</p>
+                    <p class="text-7xl font-black text-yellow-600 mt-2">#<span id="rank-counter">0</span></p>
+                    <p class="text-zinc-500 mt-2">Entre <strong>32</strong> departamentos</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border-t-4 border-blue-500">
+                    <p class="text-lg font-semibold text-zinc-600">Avance en Ranking</p>
+                    <p class="text-7xl font-black text-blue-600 mt-2">+<span id="climb-counter">0</span></p>
+                    <p class="text-zinc-500 mt-2">Puestos desde <strong>2023</strong></p>
+                </div>
+            </div>
+
+            <div class="max-w-4xl mx-auto mt-24 bg-white p-8 md:p-12 rounded-lg shadow-lg animated-element">
+                 <h3 class="section-title">Un Logro que se Siente en tu Día a Día</h3>
+                 <p class="section-subtitle text-justify">Cada año, el Gobierno Nacional nos evalúa a través del <strong>Índice de Desempeño Institucional (IDI)</strong>. En palabras sencillas, es la calificación que nos dice qué tan bien estamos haciendo nuestro trabajo para ti.</p>
+                 <div id="accordion-container" class="max-w-3xl mx-auto space-y-3 mt-8">
+                 </div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto mt-24 text-center animated-element">
+                 <h3 class="text-2xl font-bold text-zinc-800">¡Corre la Voz! Comparte este Orgullo</h3>
+                 <div class="flex justify-center items-center gap-4 mt-6">
+                     <button id="share-facebook" class="share-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"></path></svg>
+                         Compartir en Facebook
+                     </button>
+                      <button id="copy-link" class="share-button copy-button">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.654 0 3 1.346 3 3s-1.346 3-3 3h-4v2h4c2.757 0 5-2.243 5-5s-2.243-5-5-5zm-6 8H7c-1.654 0-3-1.346-3-3s1.346-3 3-3h4V7H7c-2.757 0-5 2.243-5 5s2.243 5 5 5h4v-2zm-1-4h6v2H6z"></path></svg>
+                         Copiar Enlace
+                     </button>
+                 </div>
+                 <p id="copy-feedback" class="text-green-600 font-semibold mt-4 h-5"></p>
+            </div>
+
+        </section>
+        
+        <section id="el-salto" class="py-16">
+            <div class="text-center max-w-4xl mx-auto animated-element">
+                <h3 class="section-title">El Gran Salto de Casanare</h3>
+                <h4 class="section-subtitle -mt-4 font-semibold">Pasamos del puesto 14 al 6, en el primer año de gobierno.</h4>
+                <p class="section-subtitle text-justify">
+                    Este resultado no es obra de la casualidad. Es la culminación de un proceso de mejora continua que dio un <strong>salto histórico</strong>. En la administración pública, un avance de 1 o 2 puestos se considera un gran logro. <strong>El salto de 7 posiciones de Casanare en un solo año es una verdadera hazaña de gestión.</strong>
+                </p>
+            </div>
+            <div class="bg-white p-2 sm:p-6 md:p-8 rounded-lg shadow-lg animated-element">
+                <div class="chart-container">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="claves-exito" class="py-16">
+             <div class="text-center max-w-4xl mx-auto animated-element">
+                <h3 class="section-title">¿Cómo lo Logramos? Las Claves del Éxito</h3>
+                <p class="section-subtitle text-justify">Este logro se fundamenta en acciones concretas y mejoras medibles. Modernizamos nuestra gestión en áreas estratégicas y enfocamos nuestros mayores esfuerzos en los puntos de mayor impacto.</p>
+            </div>
+            <div class="bg-white p-2 sm:p-6 md:p-8 rounded-lg shadow-lg animated-element">
+                <h4 class="text-2xl font-bold text-center text-zinc-800">Políticas Estratégicas que Transformaron la Gestión</h4>
+                 <div id="policies-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                 </div>
+            </div>
+             <div class="bg-white p-2 sm:p-6 md:p-8 rounded-lg shadow-lg animated-element mt-16">
+                <h4 class="text-2xl font-bold text-center text-zinc-800">Los Avances Más Impactantes</h4>
+                <p class="text-zinc-600 text-center mt-2 max-w-2xl mx-auto text-justify">Para dar este salto, concentramos nuestros esfuerzos en áreas críticas. Estos fueron los <strong>5 motores del cambio</strong>, con los mayores crecimientos en puntaje.</p>
+                <div class="chart-container mt-8" style="height: 450px;">
+                    <canvas id="impactChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section id="reconocimiento" class="py-16">
+             <div class="max-w-4xl mx-auto bg-green-50 border-l-4 border-green-500 p-8 rounded-r-lg shadow-lg animated-element">
+                <h3 class="section-title text-left text-2xl md:text-3xl text-green-800">El Equipo Detrás del Logro</h3>
+                <p class="text-green-900/80 mt-4 text-justify">
+                    Este éxito es el resultado del liderazgo y la visión del Secretario de Planeación, <strong>Alfonso Cárdenas</strong>, y la dirección estratégica de <strong>Rubiel Vargas Pinto</strong>, Director de Política Sectorial. Su trabajo, junto al de todo el <strong>talentoso equipo del Departamento Administrativo de Planeación</strong>, fue fundamental para implementar con rigor el Modelo Integrado de Planeación y Gestión (<strong>MIPG</strong>).
+                </p>
+                <p class="text-green-900/80 mt-2 text-justify">
+                    <strong>¡Su compromiso y dedicación han puesto a Casanare en el mapa de la excelencia nacional!</strong>
+                </p>
+            </div>
+        </section>
+
+        <section id="ranking-nacional" class="py-16">
+            <div class="text-center max-w-4xl mx-auto animated-element">
+                <h3 class="section-title">Casanare en la Élite Nacional</h3>
+                <h4 class="section-subtitle -mt-4 font-semibold">en el Índice de Desempeño Institucional</h4>
+                <p class="section-subtitle text-justify">Nuestro histórico puntaje nos posiciona firmemente entre los mejores del país. Hoy, competimos y superamos a regiones con más población y presupuesto.</p>
+            </div>
+             <div class="bg-white p-2 sm:p-6 md:p-8 rounded-lg shadow-lg animated-element">
+                <div class="full-ranking-chart-container">
+                    <canvas id="fullRankingChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="desafios" class="py-16">
+            <div class="max-w-4xl mx-auto bg-blue-50 border-l-4 border-blue-500 p-8 rounded-r-lg shadow-lg animated-element">
+                <h3 class="section-title text-left text-2xl md:text-3xl text-blue-800">Nuestros Próximos Desafíos</h3>
+                <p class="text-blue-900/80 mt-4 text-justify">
+                    Celebramos este hito histórico, pero nuestro compromiso no se detiene. Ya estamos trabajando para fortalecer áreas de oportunidad como <strong>Sostenibilidad Ambiental</strong> e <strong>Innovación</strong>, que son nuestra prioridad para seguir escalando hacia la excelencia.
+                </p>
+                <p class="text-blue-900/80 mt-2 text-justify">
+                   La mejora es un ciclo continuo y nuestro objetivo es claro: ser el mejor departamento del país.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <button id="scroll-to-top" title="Volver arriba">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+    </button>
+    
+    <footer class="bg-zinc-800 text-zinc-300 py-12">
+        <div class="container mx-auto px-6 text-center">
+             <h3 class="text-2xl md:text-3xl font-bold text-white">Este es solo el comienzo</h3>
+             <p class="mt-4 text-lg max-w-3xl mx-auto opacity-90 text-justify">
+                "Este resultado histórico pertenece a todos los casanareños. Es la prueba de que cuando trabajamos con un plan claro, con transparencia y con el corazón, los resultados extraordinarios son posibles. Seguiremos trabajando sin descanso por el Casanare que todos soñamos."
+            </p>
+            <p class="mt-4 font-bold text-lg text-zinc-100">- César Ortiz Zorro, Gobernador de Casanare</p>
+            <div class="mt-8 border-t border-zinc-700 pt-8 text-zinc-400">
+                <p class="text-lg font-bold">Gobernación de Casanare</p>
+                <div class="mt-6 space-y-4">
+                     <div>
+                        <p class="text-sm">Director DAP:</p>
+                        <p class="text-xl font-bold text-zinc-100">Alfonso Cárdenas</p>
+                    </div>
+                    <div>
+                        <p class="text-sm">Director Política Sectorial:</p>
+                        <p class="text-xl font-bold text-zinc-100">Rubiel Vargas Pinto</p>
+                    </div>
+                    <div>
+                        <p class="text-sm">Equipo:</p>
+                        <p class="text-xl font-bold text-zinc-100">EQUIPO MIPG POLÍTICA SECTORIAL</p>
+                    </div>
+                 </div>
+                 <p class="text-sm mt-6">
+                    Fuente de los datos: 
+                    <a href="https://www1.funcionpublica.gov.co/web/mipg/resultados-medicion" target="_blank" class="text-blue-400 hover:underline">
+                        DAFP - Resultados Medición de Desempeño
+                    </a>
+                </p>
+                 <div class="mt-6">
+                     <p class="text-sm">Investigación y Desarrollo Web por:</p>
+                     <p class="text-xl font-bold text-zinc-100">Julio César Rodríguez Cristancho</p>
+                 </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Chart.register(ChartDataLabels);
+            
+            const casanareGreen = '#00A859';
+            const casanareYellow = '#FFD700';
+
+            const animateCounter = (element, target, duration, isDecimal = false) => {
+                let start = 0;
+                let increment = isDecimal ? 0.1 : 1;
+                const stepTime = Math.abs(Math.floor(duration / (target / increment)));
+
+                const counter = setInterval(() => {
+                    start += increment;
+                    if (start >= target) {
+                        start = target;
+                        clearInterval(counter);
+                    }
+                    if (isDecimal) {
+                         element.innerText = start.toFixed(1);
+                    } else {
+                        element.innerText = Math.floor(start);
+                    }
+                }, stepTime > 0 ? stepTime : 1);
+            };
+
+            const scoreEl = document.getElementById('score-counter');
+            const rankEl = document.getElementById('rank-counter');
+            const climbEl = document.getElementById('climb-counter');
+
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(scoreEl, 89.8, 1200, true);
+                        animateCounter(rankEl, 6, 1500);
+                        animateCounter(climbEl, 7, 1500);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.8 });
+            
+            if(scoreEl) counterObserver.observe(scoreEl);
+
+            const accordionContainer = document.getElementById('accordion-container');
+            if(accordionContainer) {
+                const accordionData = [
+                    { title: "¿Qué mide exactamente el IDI?", content: "Es como una radiografía completa de nuestra Gobernación. Mide <strong>19 áreas clave</strong>, desde cómo planificamos las obras y manejamos el presupuesto, hasta cómo te atendemos y simplificamos tus trámites. En resumen: <strong>mide si usamos tus impuestos de manera eficiente y transparente para mejorar tu calidad de vida.</strong>" },
+                    { title: "¿Por qué debería importarte este logro?", content: "Un puntaje alto no es solo un número. Es la prueba de que tu Gobernación es <strong>más ágil y efectiva</strong>, lo que se traduce en: <ul class='mt-2 space-y-2 list-inside'> <li class='flex items-start'><span class='text-green-500 mr-2'>✓</span> Trámites más sencillos y rápidos.</li> <li class='flex items-start'><span class='text-green-500 mr-2'>✓</span> Mejor inversión de los recursos en los municipios.</li> <li class='flex items-start'><span class='text-green-500 mr-2'>✓</span> Más confianza en tus instituciones y lucha contra la corrupción.</li> </ul>" }
+                ];
+                accordionData.forEach((item, index) => {
+                    const element = `
+                        <div class="border border-zinc-300 rounded-lg bg-white overflow-hidden">
+                            <div class="accordion-header p-5 flex justify-between items-center">
+                                <h3 class="font-semibold text-lg text-zinc-800">${item.title}</h3>
+                                <span class="accordion-icon text-green-600 text-2xl font-light">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-5 pt-0 text-zinc-600 text-justify">${item.content}</div>
+                            </div>
+                        </div>
+                    `;
+                    accordionContainer.innerHTML += element;
+                });
+            }
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const isActive = header.classList.contains('active');
+                    document.querySelectorAll('.accordion-header.active').forEach(h => h.classList.remove('active'));
+                    document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                    if(!isActive) {
+                        header.classList.add('active');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+
+            const successPolicies = [
+                { title: 'Planeación Institucional', icon: '📊', benefit: 'Planificamos mejor para invertir mejor.', score2023: 89.6, score2024: 97.0 },
+                { title: 'Seguimiento y Evaluación', icon: '📈', benefit: 'Medimos todo para mejorar todo.', score2023: 88.0, score2024: 92.5 },
+                { title: 'Gestión de Inf. Estadística', icon: '📋', benefit: 'Decisiones con datos, no con suposiciones.', score2023: 68.0, score2024: 91.1 },
+                { title: 'Racionalización de Trámites', icon: '⚙️', benefit: 'Menos filas, significa más tiempo para ti.', score2023: 72.2, score2024: 88.5 },
+                { title: 'Gestión del Conocimiento', icon: '💡', benefit: 'Aprendemos para no repetir errores.', score2023: 70.6, score2024: 75.5 },
+                { title: 'Fortalecimiento Organizacional', icon: '🏢', benefit: 'Un equipo más fuerte para un Casanare más fuerte.', score2023: 96.0, score2024: 96.7 }
+            ];
+
+            const policiesContainer = document.getElementById('policies-container');
+            if(policiesContainer){
+                successPolicies.forEach(policy => {
+                    const card = `
+                        <div class="bg-zinc-50 p-6 rounded-lg shadow-inner text-center flex flex-col">
+                            <div class="text-4xl">${policy.icon}</div>
+                            <h4 class="font-bold text-lg text-zinc-800 mt-2 flex-grow">${policy.title}</h4>
+                            <p class="text-sm text-zinc-500 mt-1 h-10">${policy.benefit}</p>
+                            <div class="flex justify-center items-baseline gap-4 mt-4 pt-4 border-t border-zinc-200">
+                                <div>
+                                    <p class="text-sm text-zinc-500">2023</p>
+                                    <p class="font-bold text-3xl text-zinc-500">${policy.score2023}</p>
+                                </div>
+                                <div class="font-bold text-3xl text-green-500">&rarr;</div>
+                                <div>
+                                    <p class="text-sm font-bold text-green-600">2024</p>
+                                    <p class="font-black text-4xl text-green-600">${policy.score2024}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    policiesContainer.innerHTML += card;
+                });
+            }
+            
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#52525b';
+            Chart.defaults.plugins.legend.display = false;
+            Chart.defaults.plugins.tooltip.backgroundColor = '#18181b';
+            Chart.defaults.plugins.tooltip.titleFont = { size: 14, weight: 'bold' };
+            Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+            Chart.defaults.plugins.tooltip.padding = 10;
+            Chart.defaults.plugins.tooltip.cornerRadius = 4;
+
+            const initHistoricalChart = () => {
+                const ctx = document.getElementById('historicalChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['2021 (Puesto 14)', '2023 (Puesto 13)', '2024 (Puesto 6)'],
+                        datasets: [{
+                            label: 'Puntaje IDI',
+                            data: [80.0, 82.4, 89.8],
+                            backgroundColor: ['#A5B4FC', '#818CF8', casanareGreen],
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Evolución del Desempeño Institucional (Puntaje IDI)', font: { size: 16 }, color: '#18181b' },
+                            datalabels: { anchor: 'end', align: 'end', font: { weight: 'bold' }, color: '#18181b' }
+                        },
+                        scales: { 
+                            y: { 
+                                beginAtZero: false, 
+                                min: 75,
+                                max: 92, // Added space at the top
+                                title: { display: true, text: 'Puntaje' } 
+                            }, 
+                            x: { grid: { display: false } } 
+                        }
+                    }
+                });
+            };
+
+            const impactData = [
+                { label: 'Gestión Documental', from: 43.6, to: 67.3 },
+                { label: 'Gestión Inf. Estadística', from: 68.0, to: 91.1 },
+                { label: 'Seguridad Digital', from: 73.2, to: 92.3 },
+                { label: 'Integridad', from: 78.2, to: 96.2 },
+                { label: 'Racionalización de Trámites', from: 72.2, to: 88.5 }
+            ];
+
+            const initImpactChart = () => {
+                const ctx = document.getElementById('impactChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: impactData.map(d => d.label),
+                        datasets: [{
+                            label: 'Puntos Aumentados',
+                            data: impactData.map(d => d.to - d.from),
+                            backgroundColor: 'rgba(0, 168, 89, 0.8)',
+                            borderColor: '#0b5332',
+                            borderWidth: 2, borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Mayores Crecimientos en Puntaje (2023 vs 2024)', font: { size: 16 }, color: '#18181b' },
+                            datalabels: { 
+                                formatter: (value) => `+${value.toFixed(1)}`, 
+                                color: '#0b5332', anchor: 'end', align: 'end', font: { weight: 'bold' } 
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const index = context.dataIndex;
+                                        const data = impactData[index];
+                                        return `Pasamos de ${data.from} en 2023 a ${data.to} en 2024.`;
+                                    },
+                                    title: function(context) {
+                                        return context[0].label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: { 
+                            x: { 
+                                title: { display: true, text: 'Puntos de Mejora' },
+                                max: 30 // Increased max for more label space
+                            }, 
+                            y: { 
+                                grid: { display: false } 
+                            } 
+                        }
+                    }
+                });
+            };
+
+            const initFullRankingChart = () => {
+                const ctx = document.getElementById('fullRankingChart').getContext('2d');
+                const departmentsData = [
+                    { name: 'Antioquia', score: 94.1 }, { name: 'Cundinamarca', score: 93.5 },
+                    { name: 'Risaralda', score: 91.2 }, { name: 'Boyacá', score: 90.8 },
+                    { name: 'Quindío', score: 90.1 }, { name: 'Casanare', score: 89.8 },
+                    { name: 'Cauca', score: 88.5 }, { name: 'Santander', score: 87.9 },
+                    { name: 'Valle del Cauca', score: 87.5 }, { name: 'Córdoba', score: 86.8 },
+                    { name: 'Meta', score: 86.5 }, { name: 'Atlántico', score: 86.2 },
+                    { name: 'Norte de Santander', score: 85.9 }, { name: 'Tolima', score: 85.5 },
+                    { name: 'Huila', score: 85.1 }, { name: 'Caldas', score: 84.8 },
+                    { name: 'Nariño', score: 84.5 }, { name: 'Bolívar', score: 84.1 },
+                    { name: 'Cesar', score: 83.8 }, { name: 'Sucre', score: 83.5 },
+                    { name: 'Magdalena', score: 82.1 }, { name: 'La Guajira', score: 81.2 },
+                    { name: 'Chocó', score: 79.8 }, { name: 'Arauca', score: 78.5 },
+                    { name: 'Putumayo', score: 77.1 }, { name: 'Caquetá', score: 76.8 },
+                    { name: 'Guaviare', score: 75.5 }, { name: 'Vaupés', score: 74.1 },
+                    { name: 'Guainía', score: 73.8 }, { name: 'Amazonas', score: 72.5 },
+                    { name: 'Vichada', score: 71.1 }, { name: 'San Andrés', score: 70.8 }
+                ].sort((a, b) => b.score - a.score);
+
+                const labels = departmentsData.map((d, i) => `${i + 1}. ${d.name}`);
+                const scores = departmentsData.map(d => d.score);
+                const backgroundColors = departmentsData.map(d => d.name === 'Casanare' ? casanareYellow : casanareGreen);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Puntaje IDI 2024',
+                            data: scores,
+                            backgroundColor: backgroundColors,
+                            borderColor: backgroundColors,
+                            borderWidth: 1,
+                            borderRadius: 2,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                right: 35 // Added right padding for labels
+                            }
+                        },
+                        plugins: {
+                            title: { display: true, text: 'Ranking Nacional de Desempeño Institucional 2024', font: { size: 16 }, color: '#18181b' },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right', // Changed to right
+                                formatter: (value) => value.toFixed(1),
+                                font: { weight: 'bold', size: 9 },
+                                color: '#333'
+                            },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Puntaje: ${context.raw.toFixed(1)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Puntaje' },
+                                grid: { display: false }
+                            },
+                            y: {
+                                ticks: { font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const chartObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const chartId = entry.target.id;
+                        if (chartId === 'historicalChart') initHistoricalChart();
+                        if (chartId === 'impactChart') initImpactChart();
+                        if (chartId === 'fullRankingChart') initFullRankingChart();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            ['historicalChart', 'impactChart', 'fullRankingChart'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) chartObserver.observe(el);
+            });
+
+            const animateOnScroll = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.animated-element').forEach(el => animateOnScroll.observe(el));
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section[id]');
+            const scrollToTopBtn = document.getElementById('scroll-to-top');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 120) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+                if (window.scrollY > 400) {
+                    scrollToTopBtn.classList.add('visible');
+                } else {
+                    scrollToTopBtn.classList.remove('visible');
+                }
+            });
+
+            scrollToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Social Sharing
+            const shareFacebookBtn = document.getElementById('share-facebook');
+            const copyLinkBtn = document.getElementById('copy-link');
+            const copyFeedbackEl = document.getElementById('copy-feedback');
+
+            shareFacebookBtn.addEventListener('click', () => {
+                const url = encodeURIComponent(window.location.href);
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+            });
+
+            copyLinkBtn.addEventListener('click', () => {
+                const url = window.location.href;
+                const dummy = document.createElement('textarea');
+                document.body.appendChild(dummy);
+                dummy.value = url;
+                dummy.select();
+                document.execCommand('copy');
+                document.body.removeChild(dummy);
+                
+                copyFeedbackEl.textContent = '¡Enlace copiado al portapapeles!';
+                setTimeout(() => {
+                    copyFeedbackEl.textContent = '';
+                }, 3000);
+            });
+
+        });
+    </script>
+</body>
+</html>
