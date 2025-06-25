@@ -545,23 +545,39 @@
             const initFullRankingChart = () => {
                 const ctx = document.getElementById('fullRankingChart').getContext('2d');
                 const departmentsData = [
-                    { name: 'Antioquia', score: 94.1 }, { name: 'Cundinamarca', score: 93.5 },
-                    { name: 'Risaralda', score: 91.2 }, { name: 'Boyacá', score: 90.8 },
-                    { name: 'Quindío', score: 90.1 }, { name: 'Casanare', score: 89.8 },
-                    { name: 'Cauca', score: 88.5 }, { name: 'Santander', score: 87.9 },
-                    { name: 'Valle del Cauca', score: 87.5 }, { name: 'Córdoba', score: 86.8 },
-                    { name: 'Meta', score: 86.5 }, { name: 'Atlántico', score: 86.2 },
-                    { name: 'Norte de Santander', score: 85.9 }, { name: 'Tolima', score: 85.5 },
-                    { name: 'Huila', score: 85.1 }, { name: 'Caldas', score: 84.8 },
-                    { name: 'Nariño', score: 84.5 }, { name: 'Bolívar', score: 84.1 },
-                    { name: 'Cesar', score: 83.8 }, { name: 'Sucre', score: 83.5 },
-                    { name: 'Magdalena', score: 82.1 }, { name: 'La Guajira', score: 81.2 },
-                    { name: 'Chocó', score: 79.8 }, { name: 'Arauca', score: 78.5 },
-                    { name: 'Putumayo', score: 77.1 }, { name: 'Caquetá', score: 76.8 },
-                    { name: 'Guaviare', score: 75.5 }, { name: 'Vaupés', score: 74.1 },
-                    { name: 'Guainía', score: 73.8 }, { name: 'Amazonas', score: 72.5 },
-                    { name: 'Vichada', score: 71.1 }, { name: 'San Andrés', score: 70.8 }
-                ].sort((a, b) => b.score - a.score);
+                    { name: 'Valle del Cauca', score: 94.9 },
+                    { name: 'Cundinamarca', score: 94.7 },
+                    { name: 'Antioquia', score: 93.5 },
+                    { name: 'Boyacá', score: 91.3 },
+                    { name: 'Risaralda', score: 90.9 },
+                    { name: 'Casanare', score: 89.8 },
+                    { name: 'Córdoba', score: 88.4 },
+                    { name: 'Quindío', score: 87.7 },
+                    { name: 'Meta', score: 87.6 },
+                    { name: 'Cauca', score: 86.4 },
+                    { name: 'Bolívar', score: 83.3 },
+                    { name: 'Huila', score: 83.2 },
+                    { name: 'Sucre', score: 83.2 },
+                    { name: 'Caldas', score: 83.0 },
+                    { name: 'Atlántico', score: 82.2 },
+                    { name: 'Santander', score: 82.2 },
+                    { name: 'Tolima', score: 80.6 },
+                    { name: 'Norte de Santander', score: 80.5 },
+                    { name: 'Cesar', score: 78.3 },
+                    { name: 'La Guajira', score: 77.0 },
+                    { name: 'Vaupés', score: 75.6 },
+                    { name: 'Putumayo', score: 74.2 },
+                    { name: 'Chocó', score: 68.4 },
+                    { name: 'Nariño', score: 67.9 },
+                    { name: 'Vichada', score: 65.0 },
+                    { name: 'Amazonas', score: 64.6 },
+                    { name: 'Caquetá', score: 63.2 },
+                    { name: 'San Andrés', score: 62.7 },
+                    { name: 'Guaviare', score: 61.2 },
+                    { name: 'Magdalena', score: 59.0 },
+                    { name: 'Guainía', score: 56.7 },
+                    { name: 'Arauca', score: 56.5 }
+                ];
 
                 const labels = departmentsData.map((d, i) => `${i + 1}. ${d.name}`);
                 const scores = departmentsData.map(d => d.score);
