@@ -155,9 +155,13 @@
 
     <header class="hero-gradient text-white text-center py-20 px-6">
         <div class="animated-element">
-             <h1 class="text-4xl md:text-6xl font-black uppercase tracking-wide mt-2">
-                Casanare: 6º mejor del país
+            <span class="text-yellow-300 font-bold uppercase tracking-widest">Un Logro para la Historia</span>
+            <h1 class="text-4xl md:text-6xl font-black uppercase tracking-wide mt-2">
+                CASANARE: EN LA ÉLITE DE COLOMBIA
             </h1>
+            <h2 class="text-2xl md:text-4xl font-semibold mt-2">
+                <strong>6º Mejor</strong> Departamento en Gestión Pública del País
+            </h2>
         </div>
         <p class="max-w-3xl mx-auto mt-6 text-lg md:text-xl opacity-90 animated-element text-justify" style="transition-delay: 200ms;">
             Con un puntaje récord de <strong>89.8</strong>, superamos nuestra meta del cuatrienio y demostramos que una gestión <strong>eficiente y transparente</strong> es el camino. <strong>Un logro que nos pertenece a todos.</strong>
@@ -176,6 +180,32 @@
     </nav>
 
     <main class="container mx-auto px-6">
+
+        <section id="dimension-nacional" class="py-16">
+            <div class="text-center max-w-4xl mx-auto animated-element">
+                <h3 class="section-title">Un Logro de Dimensión Nacional</h3>
+                <p class="section-subtitle text-justify">Para entender la magnitud de este resultado, es clave ver el panorama completo. De miles de entidades públicas evaluadas, nuestra Gobernación se destaca en la élite.</p>
+            </div>
+            <div class="max-w-4xl mx-auto mt-8 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 animated-element">
+                <!-- Card 1: The Universe -->
+                <div class="bg-white p-8 rounded-xl text-center shadow-lg border-b-4 border-zinc-300 w-full md:w-auto">
+                    <p class="text-lg font-semibold text-zinc-600">Universo de Entidades Evaluadas (MIPG)</p>
+                    <p class="text-7xl font-black text-zinc-800">3,371</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="text-center my-4 md:my-0">
+                     <svg class="w-12 h-12 text-yellow-500 transform rotate-90 md:rotate-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </div>
+
+                <!-- Card 2: The Achievement -->
+                <div class="bg-yellow-400 p-8 rounded-xl text-center shadow-2xl w-full md:w-auto transform md:scale-105">
+                    <p class="text-lg font-bold text-yellow-900">Entre 32 Gobernaciones, somos la</p>
+                    <p class="text-8xl font-black text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">#6</p>
+                     <p class="text-lg font-bold text-yellow-900">Mejor del País</p>
+                </div>
+            </div>
+        </section>
 
         <section id="vision-general" class="py-16">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center animated-element">
@@ -318,6 +348,19 @@
                     <div>
                         <p class="text-sm">Equipo:</p>
                         <p class="text-xl font-bold text-zinc-100">EQUIPO MIPG POLÍTICA SECTORIAL</p>
+                        <div class="mt-2 text-base font-medium text-zinc-300">
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
+                                <span>Adriana Chaparro Aragón</span>
+                                <span>Nancy Jiménez</span>
+                                <span>Yanory Archila</span>
+                                <span>Elyn Narváez</span>
+                                <span>Viviana Leiton</span>
+                                <span>Martha Vargas</span>
+                            </div>
+                            <div class="mt-1 flex justify-center">
+                                <span>Dora Gutiérrez</span>
+                            </div>
+                        </div>
                     </div>
                  </div>
                  <p class="text-sm mt-6">
@@ -572,14 +615,20 @@
                     { name: 'Vichada', score: 65.0 },
                     { name: 'Amazonas', score: 64.6 },
                     { name: 'Caquetá', score: 63.2 },
-                    { name: 'San Andrés', score: 62.7 },
+                    { name: 'Archipiélago de San Andrés. Provi...', score: 62.7 },
                     { name: 'Guaviare', score: 61.2 },
                     { name: 'Magdalena', score: 59.0 },
                     { name: 'Guainía', score: 56.7 },
                     { name: 'Arauca', score: 56.5 }
                 ];
 
-                const labels = departmentsData.map((d, i) => `${i + 1}. ${d.name}`);
+                const labels = departmentsData.map((d, i) => {
+                    let name = d.name;
+                    if (name.includes('Archipiélago')) {
+                        name = 'San Andrés y Providencia';
+                    }
+                    return `${i + 1}. ${name}`;
+                });
                 const scores = departmentsData.map(d => d.score);
                 const backgroundColors = departmentsData.map(d => d.name === 'Casanare' ? casanareYellow : casanareGreen);
 
